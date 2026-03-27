@@ -18,6 +18,7 @@ getgenv().AutoNhatGheb = false
 getgenv().AutoSpin = false
 getgenv().FastRespawn = false
 getgenv().AimShiftLock = false
+getgenv().SpeedBoost = false
 
 -- Blur + GUI chính
 local Blur = Instance.new("BlurEffect", game.Lighting)
@@ -230,6 +231,30 @@ AddToggle("Inf Stamina", false, function(state)
                 pcall(function()
                     LocalPlayer.stats.Level.Value = 199999999
                 end)
+            end
+        end)
+    end
+end)
+
+local normalSpeed = 16
+local boostedSpeed = 32
+
+local function applySpeedBoost()
+    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.WalkSpeed = getgenv().SpeedBoost and boostedSpeed or normalSpeed
+    end
+end
+
+AddToggle("Tăng Tốc Chạy", false, function(state)
+    getgenv().SpeedBoost = state
+    applySpeedBoost()
+
+    if state then
+        spawn(function()
+            while getgenv().SpeedBoost do
+                task.wait(0.4)
+                applySpeedBoost()
             end
         end)
     end
