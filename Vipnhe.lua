@@ -17,6 +17,7 @@ getgenv().AutoNhatGhe = false
 getgenv().AutoNhatGheb = false
 getgenv().AutoSpin = false
 getgenv().FastRespawn = false
+getgenv().AimShiftLock = false
 
 -- Blur + GUI chính
 local Blur = Instance.new("BlurEffect", game.Lighting)
@@ -129,6 +130,7 @@ end)
 
 -- Danh sách toggle để search
 local toggleList = {}
+local aimShiftLockConn = nil
 
 local function AddToggle(name, default, callback)
     local frame = Instance.new("Frame", Scroll)
@@ -272,6 +274,46 @@ AddToggle("Auto Hit Players", false, function(state)
                 end
             end
         end)
+    end
+end)
+
+AddToggle("Aim Shift Lock", false, function(state)
+    getgenv().AimShiftLock = state
+
+    if aimShiftLockConn then
+        aimShiftLockConn:Disconnect()
+        aimShiftLockConn = nil
+    end
+
+    if state then
+        UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+
+        aimShiftLockConn = RunService.RenderStepped:Connect(function()
+            if not getgenv().AimShiftLock then return end
+
+            local char = LocalPlayer.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            if not root then return end
+
+            local closest, dist = nil, 120
+            for _, p in Players:GetPlayers() do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local enemyRoot = p.Character.HumanoidRootPart
+                    local d = (enemyRoot.Position - root.Position).Magnitude
+                    if d < dist then
+                        dist = d
+                        closest = enemyRoot
+                    end
+                end
+            end
+
+            if closest then
+                local targetPos = Vector3.new(closest.Position.X, root.Position.Y, closest.Position.Z)
+                root.CFrame = CFrame.new(root.Position, targetPos)
+            end
+        end)
+    else
+        UserInputService.MouseBehavior = Enum.MouseBehavior.Default
     end
 end)
 
