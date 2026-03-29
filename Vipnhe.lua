@@ -9,7 +9,6 @@ local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
 getgenv().healthEspEnabled = false
-getgenv().InfStamina = false
 getgenv().AutoPvp = false
 getgenv().HealthMode = false
 getgenv().AutoLayBan = false
@@ -221,16 +220,27 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ==================== INF STAMINA + AUTO PVP + AUTO HIT ====================
-AddToggle("Inf Stamina", false, function(state)
-    getgenv().InfStamina = state
+-- ==================== SPEED + AUTO PVP + AUTO HIT ====================
+
+local normalSpeed = 16
+local boostedSpeed = 32
+
+local function applySpeedBoost()
+    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.WalkSpeed = getgenv().SpeedBoost and boostedSpeed or normalSpeed
+    end
+end
+
+AddToggle("Tăng Tốc Chạy", false, function(state)
+    getgenv().SpeedBoost = state
+    applySpeedBoost()
+
     if state then
         spawn(function()
-            while getgenv().InfStamina do
-                task.wait()
-                pcall(function()
-                    LocalPlayer.stats.Level.Value = 199999999
-                end)
+            while getgenv().SpeedBoost do
+                task.wait(0.4)
+                applySpeedBoost()
             end
         end)
     end
