@@ -9,7 +9,6 @@ local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
 getgenv().healthEspEnabled = false
-getgenv().InfStamina = false
 getgenv().AutoPvp = false
 getgenv().HealthMode = false
 getgenv().AutoLayBan = false
@@ -17,6 +16,8 @@ getgenv().AutoNhatGhe = false
 getgenv().AutoNhatGheb = false
 getgenv().AutoSpin = false
 getgenv().FastRespawn = false
+getgenv().AimShiftLock = false
+getgenv().SpeedBoost = false
 
 -- Blur + GUI chính
 local Blur = Instance.new("BlurEffect", game.Lighting)
@@ -41,7 +42,7 @@ local Bg = Instance.new("ImageLabel", MainFrame)
 Bg.Size = UDim2.new(1, 40, 1, 40)
 Bg.Position = UDim2.new(0.5, 0, 0.5, 0)
 Bg.AnchorPoint = Vector2.new(0.5, 0.5)
-Bg.Image = "rbxassetid://5554236805"
+Bg.Image = "rbxassetid://130288045991242"
 Bg.ImageColor3 = Color3.new(0,0,0)
 Bg.ImageTransparency = 0.6
 Bg.BackgroundTransparency = 1
@@ -129,6 +130,7 @@ end)
 
 -- Danh sách toggle để search
 local toggleList = {}
+local aimShiftLockConn = nil
 
 local function AddToggle(name, default, callback)
     local frame = Instance.new("Frame", Scroll)
@@ -218,16 +220,27 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ==================== INF STAMINA + AUTO PVP + AUTO HIT ====================
-AddToggle("Inf Stamina", false, function(state)
-    getgenv().InfStamina = state
+-- ==================== SPEED + AUTO PVP + AUTO HIT ====================
+
+local normalSpeed = 16
+local boostedSpeed = 32
+
+local function applySpeedBoost()
+    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.WalkSpeed = getgenv().SpeedBoost and boostedSpeed or normalSpeed
+    end
+end
+
+AddToggle("Tăng Tốc Chạy", false, function(state)
+    getgenv().SpeedBoost = state
+    applySpeedBoost()
+
     if state then
         spawn(function()
-            while getgenv().InfStamina do
-                task.wait()
-                pcall(function()
-                    LocalPlayer.stats.Level.Value = 199999999
-                end)
+            while getgenv().SpeedBoost do
+                task.wait(0.4)
+                applySpeedBoost()
             end
         end)
     end
@@ -272,6 +285,46 @@ AddToggle("Auto Hit Players", false, function(state)
                 end
             end
         end)
+    end
+end)
+
+AddToggle("Aim Shift Lock", false, function(state)
+    getgenv().AimShiftLock = state
+
+    if aimShiftLockConn then
+        aimShiftLockConn:Disconnect()
+        aimShiftLockConn = nil
+    end
+
+    if state then
+        UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+
+        aimShiftLockConn = RunService.RenderStepped:Connect(function()
+            if not getgenv().AimShiftLock then return end
+
+            local char = LocalPlayer.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            if not root then return end
+
+            local closest, dist = nil, 120
+            for _, p in Players:GetPlayers() do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local enemyRoot = p.Character.HumanoidRootPart
+                    local d = (enemyRoot.Position - root.Position).Magnitude
+                    if d < dist then
+                        dist = d
+                        closest = enemyRoot
+                    end
+                end
+            end
+
+            if closest then
+                local targetPos = Vector3.new(closest.Position.X, root.Position.Y, closest.Position.Z)
+                root.CFrame = CFrame.new(root.Position, targetPos)
+            end
+        end)
+    else
+        UserInputService.MouseBehavior = Enum.MouseBehavior.Default
     end
 end)
 
