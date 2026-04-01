@@ -42,7 +42,7 @@ local Bg = Instance.new("ImageLabel", MainFrame)
 Bg.Size = UDim2.new(1, 40, 1, 40)
 Bg.Position = UDim2.new(0.5, 0, 0.5, 0)
 Bg.AnchorPoint = Vector2.new(0.5, 0.5)
-Bg.Image = "rbxassetid://5554236805"
+Bg.Image = "rbxassetid://130288045991242"
 Bg.ImageColor3 = Color3.new(0,0,0)
 Bg.ImageTransparency = 0.6
 Bg.BackgroundTransparency = 1
@@ -221,30 +221,6 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==================== SPEED + AUTO PVP + AUTO HIT ====================
-
-local normalSpeed = 16
-local boostedSpeed = 32
-
-local function applySpeedBoost()
-    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum.WalkSpeed = getgenv().SpeedBoost and boostedSpeed or normalSpeed
-    end
-end
-
-AddToggle("Tăng Tốc Chạy", false, function(state)
-    getgenv().SpeedBoost = state
-    applySpeedBoost()
-
-    if state then
-        spawn(function()
-            while getgenv().SpeedBoost do
-                task.wait(0.4)
-                applySpeedBoost()
-            end
-        end)
-    end
-end)
 
 local normalSpeed = 16
 local boostedSpeed = 32
